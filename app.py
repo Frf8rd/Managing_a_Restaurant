@@ -3,7 +3,7 @@ from database import get_connection
 
 app = Flask(__name__, template_folder="Frontend")
 @app.route("/")
-def index():
+def home():
     conn = get_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM menu")
@@ -12,6 +12,13 @@ def index():
 
     return render_template("index.html", date=rezultate)
 
+@app.route("/sign-up")
+def sign_up():
+    return render_template('auth.html')
+
+@app.route("/login")
+def sign_up():
+    return render_template('auth.html')
 
 
 
