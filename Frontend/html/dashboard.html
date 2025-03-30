@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/Frontend/style/dashboard.css">
+</head>
+<body>
+    <header>
+        <img src="/Frontend/image/pexels-fotios-photos-776538 (1).jpg" alt="Imagine de sus">
+    </header>
+
+    <div class="spacer"></div> <!-- Spațiu alb după imagine -->
+
+   <!--Navbar-->
+   <div class="navbar" id="navbar">
+        <div class="logo">🟢 MyLogo</div>
+        <div class="profile" id="profile">
+            <img src="/Frontend/image/user.png" alt="Profil">
+            <div class="dropdown-menu" id="dropdown-menu">
+                <a href="#">Profil</a>
+                <a href="#">Setări</a>
+                <a href="#" id="add-product-btn">Add Product</a>
+                <a href="#">Deconectare</a>
+            </div>
+        </div>
+    </div>
+
+   <div class="content">
+        <h3>Products</h3>
+
+        <!-- Modal pentru adăugare produs -->
+        <div id="add-product-modal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h3>Add New Product</h3>
+                <form id="add-product-form">
+                    <input type="text" id="name" placeholder="Product Name" required>
+                    <textarea id="description" placeholder="Description" required></textarea>
+                    <input type="text" id="price" placeholder="Price" required>
+                    <input type="text" id="image_url" placeholder="Image URL" required>
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">Save</button>
+                        <button type="button" class="cancel-btn" id="cancel-add">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Modal pentru editare produs -->
+        <div id="edit-product-modal" class="modal">
+            <div class="modal-content">
+                <span class="close" id="close-edit">&times;</span>
+                <h3>Edit Product</h3>
+                <form id="edit-product-form">
+                    <input type="hidden" id="edit-id">
+                    <input type="text" id="edit-name" placeholder="Product Name" required>
+                    <textarea id="edit-description" placeholder="Description" required></textarea>
+                    <input type="text" id="edit-price" placeholder="Price" required>
+                    <input type="text" id="edit-image_url" placeholder="Image URL" required>
+                    <div class="form-actions">
+                        <button type="submit" class="save-btn">Save Changes</button>
+                        <button type="button" class="cancel-btn" id="cancel-edit">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="products" id="product-container">
+            {% for product in products %}
+                <div class="product-card" id="product-{{ product.id }}">
+                    <div class="labels">
+                        <span class="vegan">✔ Vegan</span>
+                        <span class="new">⭐ New!</span>
+                    </div>
+                    <div class="product-image-container">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                    </div>
+                    <div class="product-info">
+                        <h2 class="product-title">{{ product.name }}</h2>
+                        <p class="product-description">{{ product.description }}</p>
+                        <div class="price-select">
+                            <span class="price">${{ product.price }}</span>
+                            <button class="edit-btn" data-id="{{ product.id }}" 
+                                    data-name="{{ product.name }}" 
+                                    data-description="{{ product.description }}" 
+                                    data-price="{{ product.price }}"
+                                    data-image="{{ product.image_url }}">Edit</button>
+                            <button class="delete-btn" data-id="{{ product.id }}">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="footer">
+        <h2>Despre noi</h2>
+        <p>Acesta este un proiect creat pentru a oferi cea mai bună experiență utilizatorilor noștri.</p>
+    </div>
+
+   <script src="/Frontend/js/dashboard.js"></script>
+   
+</body>
+</html>

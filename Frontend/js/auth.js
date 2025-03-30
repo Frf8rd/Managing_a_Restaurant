@@ -46,15 +46,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 throw new Error(result.message || "Eroare necunoscută!");
             }
 
-            if (isLogin) {
-                localStorage.setItem("token", result.access_token);
-                alert("Autentificare reușită!");
-                setTimeout(() => window.location.href = "/", 1000);
-            } else {
-                alert("Înregistrare reușită! Acum te poți autentifica.");
-                chk.checked = true;
-                history.pushState(null, "", "/login");
+            if (result.redirect) {
+                if (isLogin) {
+                    localStorage.setItem("token", result.access_token);
+                }
+                window.location.href = result.redirect;
             }
+            
         } catch (error) {
             alert(error.message);
         }

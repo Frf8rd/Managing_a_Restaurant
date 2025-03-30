@@ -1,34 +1,17 @@
-from flask import Flask, request, jsonify, render_template
-from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
+from flask import Blueprint, request, jsonify, render_template
+from flask_jwt_extended import create_access_token
 import bcrypt
 from database import get_connection
 
-app = Flask(__name__, template_folder="Frontend/html", static_folder="Frontend")
+auth_bp = Blueprint('auth', __name__)
 
-# Configurare JWT
-app.config['JWT_SECRET_KEY'] = 'super-secret-key'  # Schimbă cu o cheie puternică
-jwt = JWTManager(app)
-
-# Lista de email-uri pentru administratori (sau poți face o verificare în DB)
 ALLOWED_ADMIN_EMAILS = ['admin@example.com']
 
-# # Ruta principală - afișează meniul din DB
-# @app.route("/")
-# def home():
-#     conn = get_connection()
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT * FROM menu")
-#     rezultate = cursor.fetchall()
-#     conn.close()
-#     return render_template("index.html", date=rezultate)
-
-# Pagina de autentificare/înregistrare (aceeași pentru ambele)
-@app.route("/")
+@auth_bp.route('/')
 def auth():
     return render_template('auth.html')
 
-# Înregistrare utilizator
-@app.route('/register', methods=['POST'])
+@auth_bp.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
     username = data.get('username')
@@ -42,7 +25,7 @@ def register():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM users WHERE email = %s", (email,))
     user = cursor.fetchone()
-    
+
     if user:
         conn.close()
         return jsonify({'message': 'Email deja înregistrat'}), 400
@@ -57,9 +40,7 @@ def register():
 
     return jsonify({'message': 'Înregistrare reușită', 'redirect': '/dashboard'}), 201
 
-
-# Autentificare utilizator
-@app.route('/login', methods=['POST'])
+@auth_bp.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
@@ -79,33 +60,9 @@ def login():
 
     access_token = create_access_token(identity={'username': user[0], 'email': user[1], 'role': user[3]})
     return jsonify({
-    'message': 'Autentificare reușită!',
-    'redirect': '/dashboard',
-    'access_token': access_token,
-    'username': user[0],
-    'role': user[3]
-}), 200
-
-
-# Endpoint protejat pentru administratori
-@app.route('/admin-only', methods=['GET'])
-@jwt_required()
-def admin_only():
-    current_user = get_jwt_identity()
-    if current_user['role'] != 'admin':
-        return jsonify({'message': 'Acces interzis. Nu ești admin!'}), 403
-    return jsonify({'message': f'Bun venit, {current_user["username"]} (Admin)!'}), 200
-
-
-
-
-
-
-@app.route('/dashboard')
-def dashboard():
-    return render_template('dashboard.html')
-
-
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        'message': 'Autentificare reușită!',
+        'redirect': '/dashboard',
+        'access_token': access_token,
+        'username': user[0],
+        'role': user[3]
+    }), 200

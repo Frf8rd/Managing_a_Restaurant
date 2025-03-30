@@ -1,29 +1,20 @@
-from flask import Flask, render_template
-from database import get_connection
+from flask import Flask
+from flask_jwt_extended import JWTManager
+from config import Config
+from routes.auth import auth_bp
+from routes.admin import admin_bp
+from routes.dashboard import dashboard_bp
 
-app = Flask(__name__, template_folder="Frontend")
-@app.route("/")
-def home():
-    conn = get_connection()
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM menu")
-    rezultate = cursor.fetchall()
-    conn.close()
+app = Flask(__name__, template_folder="Frontend/html", static_folder="Frontend")
+app.config.from_object(Config)
 
-    return render_template("index.html", date=rezultate)
+# Configurare JWT
+jwt = JWTManager(app)
 
-@app.route("/sign-up")
-def sign_up():
-    return render_template('auth.html')
-
-@app.route("/login")
-def sign_up():
-    return render_template('auth.html')
-
-
-
+# Înregistrare Blueprint-uri
+app.register_blueprint(auth_bp)
+app.register_blueprint(admin_bp)
+app.register_blueprint(dashboard_bp)
 
 if __name__ == "__main__":
-    app.run(debug = True)
-
-
+    app.run(debug=True)
