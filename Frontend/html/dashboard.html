@@ -34,11 +34,11 @@
             <div class="modal-content">
                 <span class="close">&times;</span>
                 <h3>Add New Product</h3>
-                <form id="add-product-form">
+                <form id="add-product-form" enctype="multipart/form-data">
                     <input type="text" id="name" placeholder="Product Name" required>
                     <textarea id="description" placeholder="Description" required></textarea>
                     <input type="text" id="price" placeholder="Price" required>
-                    <input type="text" id="image_url" placeholder="Image URL" required>
+                    <input type="file" id="image" name="image" accept="image/*" required>
                     <div class="form-actions">
                         <button type="submit" class="save-btn">Save</button>
                         <button type="button" class="cancel-btn" id="cancel-add">Cancel</button>
@@ -52,12 +52,13 @@
             <div class="modal-content">
                 <span class="close" id="close-edit">&times;</span>
                 <h3>Edit Product</h3>
-                <form id="edit-product-form">
+                <form id="edit-product-form" enctype="multipart/form-data">
                     <input type="hidden" id="edit-id">
                     <input type="text" id="edit-name" placeholder="Product Name" required>
                     <textarea id="edit-description" placeholder="Description" required></textarea>
                     <input type="text" id="edit-price" placeholder="Price" required>
-                    <input type="text" id="edit-image_url" placeholder="Image URL" required>
+                    <input type="file" id="edit-image" name="image" accept="image/*">
+                    <input type="hidden" id="edit-existing-image">
                     <div class="form-actions">
                         <button type="submit" class="save-btn">Save Changes</button>
                         <button type="button" class="cancel-btn" id="cancel-edit">Cancel</button>
@@ -74,7 +75,8 @@
                         <span class="new">⭐ New!</span>
                     </div>
                     <div class="product-image-container">
-                        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
+                        <!-- Înlocuiește toate referințele la imagini cu: -->
+                        <img src="/uploads/{{ product.image_url }}" alt="{{ product.name }}" class="product-image">
                     </div>
                     <div class="product-info">
                         <h2 class="product-title">{{ product.name }}</h2>

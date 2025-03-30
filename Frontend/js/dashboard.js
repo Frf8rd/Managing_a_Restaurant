@@ -21,14 +21,24 @@ document.addEventListener("DOMContentLoaded", function() {
     const cancelAddBtn = document.getElementById("cancel-add");
     const cancelEditBtn = document.getElementById("cancel-edit");
     
-    // Funcție pentru afișarea/ascunderea meniului dropdown
+    // Funcții pentru modals
+    function openModal(modal) {
+        modal.style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+    
+    function closeModal(modal) {
+        modal.style.display = "none";
+        document.body.style.overflow = "auto";
+    }
+    
+    // Dropdown menu
     if (profileIcon && dropdownMenu) {
         profileIcon.addEventListener("click", function(event) {
             event.stopPropagation();
             dropdownMenu.classList.toggle("active");
         });
 
-        // Închide meniul când utilizatorul dă click în afara lui
         document.addEventListener("click", function(event) {
             if (!profileIcon.contains(event.target) && !dropdownMenu.contains(event.target)) {
                 dropdownMenu.classList.remove("active");
@@ -36,26 +46,15 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Funcții pentru modals
-    function openModal(modal) {
-        modal.style.display = "block";
-        document.body.style.overflow = "hidden"; // Blochează scroll-ul pe body
-    }
-    
-    function closeModal(modal) {
-        modal.style.display = "none";
-        document.body.style.overflow = "auto"; // Reactivează scroll-ul
-    }
-    
-    // Event listener pentru butonul "Add Product" din dropdown
+    // Add product
     if (addProductBtn) {
         addProductBtn.addEventListener("click", function() {
             openModal(addProductModal);
-            dropdownMenu.classList.remove("active"); // Închide dropdown-ul
+            dropdownMenu.classList.remove("active");
         });
     }
     
-    // Event listeners pentru butoanele de închidere
+    // Close buttons
     closeButtons.forEach(button => {
         button.addEventListener("click", function() {
             const modal = this.closest(".modal");
@@ -63,11 +62,11 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     });
     
-    // Event listeners pentru butoanele Cancel
+    // Cancel buttons
     if (cancelAddBtn) {
         cancelAddBtn.addEventListener("click", function() {
             closeModal(addProductModal);
-            addProductForm.reset(); // Resetează formularele
+            addProductForm.reset();
         });
     }
     
@@ -77,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
     
-    // Închide modalurile când se face click în afara conținutului
+    // Close modals on outside click
     window.addEventListener("click", function(event) {
         if (event.target === addProductModal) {
             closeModal(addProductModal);
@@ -87,43 +86,37 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     });
     
-    // ✅ Adaugă un produs
+    // Add product form
     if (addProductForm) {
         addProductForm.addEventListener("submit", function(event) {
             event.preventDefault();
-            const name = document.getElementById("name").value;
-            const description = document.getElementById("description").value;
-            const price = document.getElementById("price").value;
-            const image_url = document.getElementById("image_url").value;
-            
-            // Obiectul pentru Backend
-            const productData = {
-                name: name,
-                description: description,
-                price: price,
-                image_url: image_url,
-                available: true // Presupunem că noile produse sunt disponibile implicit
-            };
+            const formData = new FormData();
+            formData.append('name', document.getElementById("name").value);
+            formData.append('description', document.getElementById("description").value);
+            formData.append('price', document.getElementById("price").value);
+            formData.append('image', document.getElementById("image").files[0]);
 
             fetch("/dashboard", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(productData)
+                body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
                 closeModal(addProductModal);
                 addProductForm.reset();
-                location.reload(); // Reîncarcă pagina pentru a vedea noul produs
+                location.reload();
             })
             .catch(error => {
                 console.error("Error adding product:", error);
-                alert("A apărut o eroare la adăugarea produsului.");
+                alert("A apărut o eroare la adăugarea produsului: " + error.message);
             });
         });
     }
     
-    // ✅ Șterge un produs
+    // Delete product
     if (productContainer) {
         productContainer.addEventListener("click", function(event) {
             if (event.target.classList.contains("delete-btn")) {
@@ -135,24 +128,24 @@ document.addEventListener("DOMContentLoaded", function() {
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ id: id })
                     })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        return response.json();
+                    })
                     .then(data => {
-                        // Eliminăm elementul din DOM
                         const productCard = document.getElementById("product-" + id);
-                        if (productCard) {
-                            productCard.remove();
-                        }
+                        if (productCard) productCard.remove();
                     })
                     .catch(error => {
                         console.error("Error deleting product:", error);
-                        alert("A apărut o eroare la ștergerea produsului.");
+                        alert("A apărut o eroare la ștergerea produsului: " + error.message);
                     });
                 }
             }
         });
     }
     
-    // ✅ Deschide modalul pentru editarea unui produs
+    // Edit product modal
     if (productContainer) {
         productContainer.addEventListener("click", function(event) {
             if (event.target.classList.contains("edit-btn")) {
@@ -163,61 +156,54 @@ document.addEventListener("DOMContentLoaded", function() {
                 const price = button.getAttribute("data-price");
                 const imageUrl = button.getAttribute("data-image");
                 
-                // Completează formularele cu valorile existente
                 document.getElementById("edit-id").value = id;
                 document.getElementById("edit-name").value = name;
                 document.getElementById("edit-description").value = description;
                 document.getElementById("edit-price").value = price;
-                document.getElementById("edit-image_url").value = imageUrl;
+                document.getElementById("edit-existing-image").value = imageUrl;
                 
-                // Deschide modalul
                 openModal(editProductModal);
             }
         });
     }
     
-    // ✅ Actualizează un produs
+    // Edit product form
     if (editProductForm) {
         editProductForm.addEventListener("submit", function(event) {
             event.preventDefault();
-            
-            const id = document.getElementById("edit-id").value;
-            const name = document.getElementById("edit-name").value;
-            const description = document.getElementById("edit-description").value;
-            const price = document.getElementById("edit-price").value;
-            const image_url = document.getElementById("edit-image_url").value;
-            
-            // Obiectul pentru Backend
-            const productData = {
-                id: id,
-                name: name,
-                description: description,
-                price: price,
-                image_url: image_url,
-                available: true // Menținem disponibilitatea
-            };
-            
+            const formData = new FormData();
+            formData.append('id', document.getElementById("edit-id").value);
+            formData.append('name', document.getElementById("edit-name").value);
+            formData.append('description', document.getElementById("edit-description").value);
+            formData.append('price', document.getElementById("edit-price").value);
+            formData.append('existing_image', document.getElementById("edit-existing-image").value);
+
+            const newImage = document.getElementById("edit-image").files[0];
+            if (newImage) formData.append('image', newImage);
+
             fetch("/dashboard", {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(productData)
+                body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) throw new Error('Network response was not ok');
+                return response.json();
+            })
             .then(data => {
-                closeModal(editProductModal);
-                
-                // Actualizăm elementele din DOM
-                const productCard = document.getElementById("product-" + id);
+                const productCard = document.getElementById("product-" + data.id);
                 if (productCard) {
-                    productCard.querySelector(".product-title").innerText = name;
-                    productCard.querySelector(".product-description").innerText = description;
-                    productCard.querySelector(".price").innerText = "$" + price;
-                    productCard.querySelector(".product-image").src = image_url;
+                    productCard.querySelector(".product-title").textContent = data.name || document.getElementById("edit-name").value;
+                    productCard.querySelector(".product-description").textContent = data.description || document.getElementById("edit-description").value;
+                    productCard.querySelector(".price").textContent = "$" + (data.price || document.getElementById("edit-price").value);
+                    if (data.image_url) {
+                        productCard.querySelector(".product-image").src = "/static/uploads/" + data.image_url;
+                    }
                 }
+                closeModal(editProductModal);
             })
             .catch(error => {
                 console.error("Error updating product:", error);
-                alert("A apărut o eroare la actualizarea produsului.");
+                alert("A apărut o eroare la actualizarea produsului: " + error.message);
             });
         });
     }

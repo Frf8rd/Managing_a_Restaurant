@@ -242,7 +242,8 @@ header img {
     display: flex;
     flex-direction: column;
     height: 400px;
-    border-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
     transition: transform 0.3s, box-shadow 0.3s;
 }
 
